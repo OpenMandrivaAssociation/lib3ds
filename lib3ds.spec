@@ -13,7 +13,6 @@ Group:		System/Libraries
 URL:		http://lib3ds.sourceforge.net/
 Summary:	The 3D Studio File Format Library
 BuildRequires:	MesaGLU-devel
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 Lib3ds is a free alternative to Autodesk's 3DS File Toolkit for handling
