@@ -1,13 +1,14 @@
 %define	name	lib3ds
-%define	version	1.2.0
-%define	rel	6
+%define	version	1.3.0
+%define	rel	1
+%define major	3
 %define	release	%mkrel %{rel}
 
 Name:		%{name}
 Version:	%{version}
 Release:	%{release}
 Source0:	%{name}-%{version}.tar.bz2
-Patch0:		lib3ds-1.2.0-fix-underquoted-calls.patch
+#Patch0:		lib3ds-1.2.0-fix-underquoted-calls.patch
 License:	GPL
 Group:		System/Libraries
 URL:		http://lib3ds.sourceforge.net/
@@ -47,10 +48,10 @@ License for more details.
 
 %prep
 %setup -q
-%patch0 -p1 -b .underquoted
+#%patch0 -p1 -b .underquoted
 
 %build
-CFLAGS="%{optflags} -fPIC" %configure2_5x
+CFLAGS="%{optflags} -fPIC" %configure2_5x --disable-static
 %make
 
 %install
@@ -62,10 +63,16 @@ rm -rf %{buildroot}
 %clean
 rm -rf %{buildroot}
 
+%files
+%defattr(-,root,root,-)
+%doc AUTHORS COPYING ChangeLog README
+%{_libdir}/*.so.%{major}
+%{_libdir}/*.so.%{major}.*
+
 %files -n %{name}-devel
 %defattr(644,root,root,755)
-%doc AUTHORS ChangeLog INSTALL README TODO
-%{_libdir}/%{name}.a
+%{_libdir}/%{name}.la
+%{_libdir}/%{name}.so
 %{_includedir}/%{name}
 %{_datadir}/aclocal/%{name}.m4
 %{_mandir}/man1/*
