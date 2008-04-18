@@ -1,18 +1,16 @@
-%define	name	lib3ds
-%define	version	1.3.0
-%define	rel	1
-%define major	3
-%define	release	%mkrel %{rel}
+%define major 3
+%define libname %mklibname 3ds %{major}
+%define develname %mklibname 3ds -d
 
-Name:		%{name}
-Version:	%{version}
-Release:	%{release}
-Source0:	%{name}-%{version}.tar.bz2
+Summary:	The 3D Studio file format library
+Name:		lib3ds
+Version:	1.3.0
+Release:	%mkrel 2
 #Patch0:		lib3ds-1.2.0-fix-underquoted-calls.patch
-License:	GPL
+License:	GPLv2+
 Group:		System/Libraries
 URL:		http://lib3ds.sourceforge.net/
-Summary:	The 3D Studio File Format Library
+Source0:	http://downloads.sourceforge.net/lib3ds/%{name}-%{version}.zip
 BuildRequires:	MesaGLU-devel
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
@@ -24,16 +22,13 @@ export filters.
 This project is not related in any form to Autodesk. The library is
 based on unofficial information about the 3DS format found on the web.
 
-This  program  is  distributed in  the  hope that it will  be useful,  but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
-License for more details.
+%package -n %{libname}
+Summary:	The 3D Studio file format library
+Group:		System/Libraries
+Obsoletes:	lib3ds < 1.3.0-2
+Provides:	lib3ds
 
-%package -n	%{name}-devel
-Summary:        The 3D Studio File Format Library
-Group:          Development/C
-
-%description -n	%{name}-devel
+%description -n %{libname}
 Lib3ds is a free alternative to Autodesk's 3DS File Toolkit for handling
 3DS files It's main goal is to simplify the creation of 3DS import and
 export filters.
@@ -41,36 +36,44 @@ export filters.
 This project is not related in any form to Autodesk. The library is
 based on unofficial information about the 3DS format found on the web.
 
-This  program  is  distributed in  the  hope that it will  be useful,  but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
-License for more details.
+%package -n %{develname}
+Summary:	Development files and headers for %{name}
+Group:          Development/C
+Provides:	%{name}-devel = %{version}-%{release}
+Obsoletes:	lib3ds-devel < 1.3.0-2
+
+%description -n	%{develname}
+Development files and headers for %{name}.
 
 %prep
 %setup -q
 #%patch0 -p1 -b .underquoted
 
 %build
-CFLAGS="%{optflags} -fPIC" %configure2_5x --disable-static
+export CFLAGS="%{optflags} -fPIC"
+%configure2_5x \
+	--disable-static
 %make
 
 %install
 rm -rf %{buildroot}
-%makeinstall
+%makeinstall_std
 #multiarch
 %multiarch_binaries %{buildroot}%{_bindir}/lib3ds-config
+
+%post -n %{libname} -p /sbin/ldconfig
+%postun -n %{libname} -p /sbin/ldconfig
 
 %clean
 rm -rf %{buildroot}
 
-%files
-%defattr(-,root,root,-)
-%doc AUTHORS COPYING ChangeLog README
-%{_libdir}/*.so.%{major}
-%{_libdir}/*.so.%{major}.*
+%files -n %{libname}
+%defattr(-,root,root)
+%doc AUTHORS ChangeLog README
+%{_libdir}/*.so.%{major}*
 
-%files -n %{name}-devel
-%defattr(644,root,root,755)
+%files -n %{develname}
+%defattr(-,root,root)
 %{_libdir}/%{name}.la
 %{_libdir}/%{name}.so
 %{_includedir}/%{name}
@@ -80,5 +83,3 @@ rm -rf %{buildroot}
 %{_bindir}/3ds*
 %{_bindir}/lib3ds-config
 %multiarch %{multiarch_bindir}/lib3ds-config
-
-
