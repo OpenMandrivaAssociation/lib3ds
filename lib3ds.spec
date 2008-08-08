@@ -5,7 +5,7 @@
 Summary:	The 3D Studio file format library
 Name:		lib3ds
 Version:	1.3.0
-Release:	%mkrel 2
+Release:	%mkrel 3
 #Patch0:		lib3ds-1.2.0-fix-underquoted-calls.patch
 License:	GPLv2+
 Group:		System/Libraries
