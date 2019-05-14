@@ -1,134 +1,100 @@
-%define major 3
-%define libname %mklibname 3ds %{major}
-%define develname %mklibname 3ds -d
+%define api	1
+%define major	3
+%define libname	%mklibname 3ds %{api} %{major}
+%define devname	%mklibname 3ds -d
 
-Summary:	The 3D Studio file format library
 Name:		lib3ds
 Version:	1.3.0
-Release:	6
-License:	GPLv2+
-Group:		System/Libraries
-URL:		http://lib3ds.sourceforge.net/
-Source0:		http://downloads.sourceforge.net/lib3ds/%{name}-%{version}.zip
-BuildRequires:	pkgconfig(glut)
-
+Release:	%mkrel 20
+Summary:	3D Studio file format library
+Group:		Development/C
+License:	LGPLv2+
+URL:		http://lib3ds.sourceforge.net
+Source:		http://downloads.sourceforge.net/lib3ds/lib3ds-%{version}.zip
+# Extracted from Debian's lib3ds_1.3.0-1.diff.gz
+Patch0:		lib3ds-1.3.0-lib3ds-file.h.diff
+# Address https://bugzilla.redhat.com/show_bug.cgi?id=633475
+Patch1:		lib3ds-1.3.0-lib3ds-mesh.c.diff
+Patch2:		lib3ds-1.2.0-pkgconfig.diff
+Patch3:		lib3ds-1.3.0-automake-1.13.patch
 
 %description
-Lib3ds is a free alternative to Autodesk's 3DS File Toolkit for handling
-3DS files It's main goal is to simplify the creation of 3DS import and
-export filters.
+lib3ds is a free ANSI-C library for working with the popular "3ds" 3D model
+format.
 
-This project is not related in any form to Autodesk. The library is
-based on unofficial information about the 3DS format found on the web.
+Supported platforms include GNU (autoconf, automake, libtool, make, GCC) on
+Unix and Cygwin, and MS Visual C++ 6.0. lib3ds loads and saves Atmosphere
+settings, Background settings, Shadow map settings, Viewport setting,
+Materials, Cameras, Lights, Meshes, Hierarchy, Animation keyframes. It also
+contains useful matrix, vector and quaternion mathematics tools. lib3ds
+usually integrates well with OpenGL. In addition, some diagnostic and
+conversion tools are included.
 
 %package -n %{libname}
-Summary:	The 3D Studio file format library
+Summary:	3D Studio file format library
 Group:		System/Libraries
-Obsoletes:	lib3ds < 1.3.0-2
-Provides:	lib3ds
+Obsoletes:	%{name} < 1.3.0-16
 
 %description -n %{libname}
-Lib3ds is a free alternative to Autodesk's 3DS File Toolkit for handling
-3DS files It's main goal is to simplify the creation of 3DS import and
-export filters.
+lib3ds is a free ANSI-C library for working with the popular "3ds" 3D model
+format.
 
-This project is not related in any form to Autodesk. The library is
-based on unofficial information about the 3DS format found on the web.
+%package tools
+Summary:	3D Studio file format library
+Group:		Graphical desktop/Other
 
-%package -n %{develname}
-Summary:	Development files and headers for %{name}
-Group:          Development/C
+%description tools
+Some tools to process 3ds files.
+
+%package -n %{devname}
+Summary:	Development files for %{name}
+Group:		Development/C
+Requires:	%{libname} = %{version}-%{release}
+Obsoletes:	%{name}-devel < 1.3.0-16
 Provides:	%{name}-devel = %{version}-%{release}
-Obsoletes:	lib3ds-devel < 1.3.0-2
 
-%description -n	%{develname}
-Development files and headers for %{name}.
+%description -n %{devname}
+This package contains the development files and headers for %{name}.
 
 %prep
 %setup -q
-
+%autopatch -p1
 
 %build
-export CFLAGS="%{optflags} -fPIC"
-%configure2_5x \
-	--disable-static
-%make
+autoreconf -vfi
+%configure  --disable-static
+%make_build
+
+sed -e 's,@prefix@,%{_prefix},' \
+  -e 's,@exec_prefix@,%{_exec_prefix},' \
+  -e 's,@libdir@,%{_libdir},' \
+  -e 's,@includedir@,%{_includedir},' \
+  -e 's,@VERSION@,%{version},' \
+  lib3ds.pc.in > lib3ds.pc
 
 %install
-%makeinstall_std
-#multiarch
-%multiarch_binaries %{buildroot}%{_bindir}/lib3ds-config
+%make_install
 
-%if %mdkversion < 200900
-%post -n %{libname} -p /sbin/ldconfig
-%endif
-%if %mdkversion < 200900
-%postun -n %{libname} -p /sbin/ldconfig
-%endif
+# pkgconfig file
+install -Dpm 0644 lib3ds.pc %{buildroot}%{_libdir}/pkgconfig/%{name}.pc
 
+# we don't want these
+find %{buildroot} -name "*.la" -delete
 
 %files -n %{libname}
-%doc AUTHORS ChangeLog README
-%{_libdir}/*.so.%{major}*
+%{_libdir}/%{name}-%{api}.so.%{major}
+%{_libdir}/%{name}-%{api}.so.%{major}.*
 
-%files -n %{develname}
-%{_libdir}/%{name}.so
-%{_includedir}/%{name}
-%{_datadir}/aclocal/%{name}.m4
-%{_mandir}/man1/*
-%defattr(755,root,root,755)
-%{_bindir}/3ds*
+%files tools
+%doc AUTHORS COPYING ChangeLog README
+%{_bindir}/3dsdump
+%{_mandir}/man1/3dsdump.1*
+
+%files -n %{devname}
+%doc AUTHORS COPYING ChangeLog README
 %{_bindir}/lib3ds-config
-%multiarch %{multiarch_bindir}/lib3ds-config
-
-
-%changelog
-* Fri Dec 10 2010 Oden Eriksson <oeriksson@mandriva.com> 1.3.0-5mdv2011.0
-+ Revision: 620064
-- the mass rebuild of 2010.0 packages
-
-* Fri Sep 04 2009 Thierry Vignaud <tv@mandriva.org> 1.3.0-4mdv2010.0
-+ Revision: 429715
-- rebuild
-
-* Fri Aug 08 2008 Thierry Vignaud <tv@mandriva.org> 1.3.0-3mdv2009.0
-+ Revision: 267802
-- rebuild early 2009.0 package (before pixel changes)
-
-  + Pixel <pixel@mandriva.com>
-    - do not call ldconfig in %%post/%%postun, it is now handled by filetriggers
-
-* Fri Apr 18 2008 Tomasz Pawel Gajc <tpg@mandriva.org> 1.3.0-2mdv2009.0
-+ Revision: 195676
-- libify the package
-- new license policy
-- new development library policy
-- spec file clean
-
-* Tue Dec 25 2007 Emmanuel Andry <eandry@mandriva.org> 1.3.0-1mdv2008.1
-+ Revision: 137803
-- New version
-- drop patch (applied upstream)
-- create lib3ds binary package
-
-  + Olivier Blin <oblin@mandriva.com>
-    - restore BuildRoot
-
-  + Thierry Vignaud <tv@mandriva.org>
-    - kill re-definition of %%buildroot on Pixel's request
-
-
-* Thu Jan 18 2007 Per Øyvind Karlsen <pkarlsen@mandriva.com> 1.2.0-6mdv2007.0
-+ Revision: 110447
-- compile with -fPIC
-- Import lib3ds
-
-* Wed Jan 25 2006 Per Øyvind Karlsen <pkarlsen@mandriva.com> 1.2.0-5mdk
-- fix underquoted calls (P0)
-
-* Fri May 06 2005 Per Øyvind Karlsen <pkarlsen@mandriva.com> 1.2.0-4mdk
-- multiarch
-
-* Sat Aug 21 2004 Per Øyvind Karlsen <peroyvind@linux-mandrake.com> 1.2.0-3mdk
-- rebuild
-
+%{_libdir}/%{name}.so
+%{_libdir}/pkgconfig/lib3ds.pc
+%{_mandir}/man1/lib3ds-config.1*
+%{_includedir}/lib3ds/
+%{_datadir}/aclocal/*
