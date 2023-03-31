@@ -5,7 +5,7 @@
 
 Name:		lib3ds
 Version:	1.3.0
-Release:	%mkrel 20
+Release:	21
 Summary:	3D Studio file format library
 Group:		Development/C
 License:	LGPLv2+
