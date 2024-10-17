@@ -9,7 +9,7 @@ Release:	21
 Summary:	3D Studio file format library
 Group:		Development/C
 License:	LGPLv2+
-URL:		http://lib3ds.sourceforge.net
+URL:		https://lib3ds.sourceforge.net
 Source:		http://downloads.sourceforge.net/lib3ds/lib3ds-%{version}.zip
 # Extracted from Debian's lib3ds_1.3.0-1.diff.gz
 Patch0:		lib3ds-1.3.0-lib3ds-file.h.diff
